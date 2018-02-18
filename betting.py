@@ -16,7 +16,7 @@ def test_betting_stategy(predictions, test_features, test_labels, bet_difference
             bets.append(['A', test_features['odds-away'][i]])
 
         if probabilities[1] > (1 / test_features['odds-draw'][i]) + bet_difference:
-            bets.append(['D', test_features['odds-away'][i]])
+            bets.append(['D', test_features['odds-draw'][i]])
 
         for bet in bets:
             result['spend'] = result['spend'] + 1

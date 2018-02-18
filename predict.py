@@ -16,7 +16,6 @@ def main(argv):
 
     def map_results(results):
         features = {}
-        labels = []
 
         for result in results:
             for key in result.keys():
