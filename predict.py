@@ -1,18 +1,18 @@
 import dataset
 import betting
-import pprint
 import tensorflow as tf
 import numpy as np
+import csv
 
 TRAINING_SET_FRACTION = 0.95
 
 
 def main(argv):
-    data = dataset.get_dataset('data/book.csv')
+    data = dataset.Dataset('data/book.csv')
 
-    train_results_len = int(TRAINING_SET_FRACTION * len(data))
-    train_results = data[:train_results_len]
-    test_results = data[train_results_len:]
+    train_results_len = int(TRAINING_SET_FRACTION * len(data.processed_results))
+    train_results = data.processed_results[:train_results_len]
+    test_results = data.processed_results[train_results_len:]
 
     def map_results(results):
         features = {}
@@ -51,15 +51,15 @@ def main(argv):
 
     for mode in ['home', 'away']:
         feature_columns = feature_columns + [
-            tf.feature_column.numeric_column(key='{}-win'.format(mode)),
-            tf.feature_column.numeric_column(key='{}-lose'.format(mode)),
-            tf.feature_column.numeric_column(key='{}-draw'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-wins'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-draws'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-losses'.format(mode)),
             tf.feature_column.numeric_column(key='{}-goals'.format(mode)),
-            tf.feature_column.numeric_column(key='{}-goals-conceeded'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-opposition-goals'.format(mode)),
             tf.feature_column.numeric_column(key='{}-shots'.format(mode)),
-            tf.feature_column.numeric_column(key='{}-shots-conceeded'.format(mode)),
-            tf.feature_column.numeric_column(key='{}-shots-accuracy'.format(mode)),
-            tf.feature_column.numeric_column(key='{}-shots-accuracy-conceeded'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-shots-on-target'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-opposition-shots'.format(mode)),
+            tf.feature_column.numeric_column(key='{}-opposition-shots-on-target'.format(mode)),
         ]
 
     model = tf.estimator.DNNClassifier(
@@ -67,15 +67,23 @@ def main(argv):
         hidden_units=[10],
         feature_columns=feature_columns,
         n_classes=3,
-        label_vocabulary=['H', 'D', 'A'])
+        label_vocabulary=['H', 'D', 'A'],
+        optimizer=tf.train.ProximalAdagradOptimizer(
+            learning_rate=0.1,
+            l1_regularization_strength=0.001
+        ))
 
-    for i in range(0, 20):
-        model.train(input_fn=train_input_fn, steps=1000)
-        model.evaluate(input_fn=test_input_fn)
+    with open('training-log.csv', 'w') as stream:
+        csvwriter = csv.writer(stream)
 
-        predictions = list(model.predict(input_fn=test_input_fn))
-        prediction_result = betting.test_betting_stategy(predictions, test_features, test_labels)
-        pprint.pprint(prediction_result)
+        for i in range(0, 200):
+            model.train(input_fn=train_input_fn, steps=100)
+            evaluation_result = model.evaluate(input_fn=test_input_fn)
+
+            predictions = list(model.predict(input_fn=test_input_fn))
+            prediction_result = betting.test_betting_stategy(predictions, test_features, test_labels)
+
+            csvwriter.writerow([(i + 1) * 100, evaluation_result['accuracy'], evaluation_result['average_loss'], prediction_result['performance']])
 
 
 if __name__ == '__main__':
