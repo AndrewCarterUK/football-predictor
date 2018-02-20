@@ -2,7 +2,7 @@
 
 By [AndrewCarterUK ![(Twitter)](http://i.imgur.com/wWzX9uB.png)](https://twitter.com/AndrewCarterUK)
 
-Full Article: [Beating the Bookmakers with TensorFlow](http://andrew.carterlunn.co.uk/programming/2018/02/20/beating-the-bookmakers-with-tensorflow.html)
+Full Article: [Beating the Bookmakers with TensorFlow](https://andrew.carterlunn.co.uk/programming/2018/02/20/beating-the-bookmakers-with-tensorflow.html)
 
 ## Usage
 
