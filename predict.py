@@ -87,5 +87,15 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    tf.logging.set_verbosity(tf.logging.INFO)
-    tf.app.run(main=main)
+
+# Create a SummaryWriter
+writer = tf.summary.create_file_writer("logs")
+def main(argv=None):
+
+  # Run the main function and log the return value
+  result = main()
+
+  # Write the result to the SummaryWriter
+  with writer.as_default():
+    tf.summary.scalar("result", result, step=1)
+
